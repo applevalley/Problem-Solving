@@ -71,7 +71,7 @@ for test_case in range(1,T+1):
 #
 #     for x in range(0,N-M+1):
 #         for y in range(0,N-M+1):
-#             # (x,y)이고, 크기가 M인 사각영역을 처리
+#             # (x,y)이고, 크기가 M인 사각영역을 처리.
 #             s = 0
 #             for i in range(x,x+M):
 #                 for j in range(y,y+M):
