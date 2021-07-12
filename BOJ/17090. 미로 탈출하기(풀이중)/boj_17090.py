@@ -336,16 +336,59 @@ dy = [0, 0, -1, 1]
 def find(x, y):
     global cnt
 
-    visit[x][y] = 1
-    move_number = move_set.index(area[x][y])
-    tx, ty = x + dx[move_number], y + dy[move_number]
+    if (x, y) in success: return
 
-    if not (0 <= tx < n) or not (0 <= ty < m):
-        success.add((x, y))
-        cnt += 1
-        return
-    elif 0 <= tx < n and 0 <= ty < m and not visit[tx][ty]:
-        check.append([tx, ty])
+    Q = deque()
+    Q.append([x, y])
+    visit = [[0] * m for _ in range(n)]
+    visit[x][y] = 1
+    move_number = move_set.index(area[x][y])           # 구석 칸에 위치한 명령(방향)을 인식
+    tx, ty = x + dx[move_number], y + dy[move_number]  # 방향에 맞게 위치를 조정
+
+    if not (0 <= tx < n) or not (0 <= ty < m):         # 미로를 탈출했을까?
+        success.add((x, y))                            # 탈출했다면 해당 좌표를 탈출 리스트에 추가하고
+        cnt += 1                                       # 탈출 가능한 칸의 수를 추가해주자
+
+        # 해당 구석 좌표로 탈출이 가능한 것을 확인했다.
+        # 이제 인접한 방향의 좌표들을 확인해나갈 차례이다! 만약 인접한 좌표의 명령이 탈출이 가능한 구석 좌표이거나,
+        # 해당 구석 좌표를 향해 갈 수 있는 곳이라면 구석이 아닌 그 좌표도 역시 탈출할 수 있는 좌표가 된다.
+        # (좌표를 따라 가면 탈출이 가능한 구석 좌표를 만날 것이고, 그러면 탈출이 가능하기 때문에)
+        while Q:
+            Q_x, Q_y = Q.popleft() # 1 3
+
+            for k in range(4):  # k = 1
+                new_tx, new_ty = Q_x + dx[k], Q_y + dy[k] # x, y = 2 3
+                if 0 <= new_tx < n and 0 <= new_ty < m:   # 인접한 방향 중 구석이 아닌 경우
+                    target_number = move_set.index(area[new_tx][new_ty]) # num = 0
+                    target_x, target_y = new_tx + dx[target_number], new_ty + dy[target_number] #
+
+                    if target_x == Q_x and target_y == Q_y:
+                        success.add((target_x, target_y))
+                        cnt += 1
+                        # visit[new_tx][new_ty] = 1
+                        Q.append([target_x, target_y])
+
+    # else:
+    #     Q = deque()
+    #     Q.append([tx, ty])
+    #     while Q:
+    #         tx, ty = Q.popleft()
+    #         visit[tx][ty] = 1
+    #         move_number = move_set.index(area[tx][ty])
+    #         new_tx, new_ty = tx + dx[move_number], ty + dy[move_number]
+    #
+    #         if not (0 <= new_tx < n) or not (0 <= new_ty < m) and not visit[new_tx][new_ty]:
+    #             success.add((x, y))
+    #             cnt += 1
+    #             return
+
+            # if 0 <= new_tx < n and 0 <= new_ty < m and not visit[new_tx][new_ty]:
+
+
+
+        # elif 0 < tx < n - 1 and 0 < ty < m - 1 and [tx, ty] not in check: # and not visit[tx][ty]:
+        #     check.append([tx, ty])
+
 
 n, m = map(int, sys.stdin.readline().split())
 area = [sys.stdin.readline() for _ in range(n)]
@@ -365,24 +408,25 @@ for i in range(n):
         elif j == 0 and area[i][j] not in corner or j == m - 1 and area[i][j] not in corner:
             corner.append([i, j])
 
+
 # 구석 좌표들을 대상으로 검사
 for i, j in corner:
     find(i, j)
-
-if check:
-    while check:
-        new_x, new_y = check.popleft()
-        visit[new_x][new_y] = 1
-
-        for i in range(4):
-            new_tx, new_ty = new_x + dx[i], new_y + dy[i]
-
-            if (new_tx, new_ty) in success and (new_x, new_y) not in success:
-                success.add((new_x, new_y))
-                cnt += 1
-
-            if 0 < new_tx < n - 1 and 0 < new_ty < m - 1 and not visit[new_tx][new_ty]:
-                check.append([new_tx, new_ty])
+#
+# if check:
+#     while check:
+#         new_x, new_y = check.popleft()
+#         visit[new_x][new_y] = 1
+#
+#         for i in range(4):
+#             new_tx, new_ty = new_x + dx[i], new_y + dy[i]
+#
+#             if (new_tx, new_ty) in success and (new_x, new_y) not in success:
+#                 success.add((new_x, new_y))
+#                 cnt += 1
+#
+#             if 0 < new_tx < n - 1 and 0 < new_ty < m - 1 and not visit[new_tx][new_ty]:
+#                 check.append([new_tx, new_ty])
 
 
 print(cnt)
