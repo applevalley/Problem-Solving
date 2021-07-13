@@ -1,3 +1,8 @@
+# 매우 오랜 시간이 걸렸다.
+# 처음부터 제대로 설계를 하지 않으면 매우 힘들어질 수 있다는 것을 이 문제를 통해서 알게 되었다.
+# 항상 문제 분석과 설계를 철저히 하자고 생각했지만 잘 지키지 못했는데, 이번 문제를 통해서 그 점을 반성하게 되었다...
+# 풀이는 335번 줄 이후부터터
+
 # N x M 사이즈의 미로에서 U, D, L, R의 명령에 따라 이동했을 때 미로의 경계 밖으로 탈출이 가능하게 하는 칸은 몇개일까?
 # 탈출 가능한 "칸"이라는 데 주목해야겠다. BFS처럼 큐에 방향을 넣어가는 식의 이동이 아니라 그 칸의 명령을 그대로 따라만 가야 한다.
 # 결국 모든 칸에 대해서 탐색을 해야 할 필요가 생긴다. 시간 초과 안날까? DFS로 구성한다면 최대 재귀 깊이를 가볍게 넘어버릴 것 같다.
@@ -336,12 +341,13 @@ dy = [0, 0, -1, 1]
 def find(x, y):
     global cnt
 
+    # 만약 해당 좌표가 이전 좌표를 탐색하는 과정에서 탈출이 가능한 경로로 이미 추가되었다면, 바로 종료시켜 불필요한 연산을 줄인다.
     if (x, y) in success: return
 
     Q = deque()
     Q.append([x, y])
-    visit = [[0] * m for _ in range(n)]
-    visit[x][y] = 1
+    # visit = [[0] * m for _ in range(n)]
+    # visit[x][y] = 1
     move_number = move_set.index(area[x][y])           # 구석 칸에 위치한 명령(방향)을 인식
     tx, ty = x + dx[move_number], y + dy[move_number]  # 방향에 맞게 위치를 조정
 
@@ -354,57 +360,37 @@ def find(x, y):
         # 해당 구석 좌표를 향해 갈 수 있는 곳이라면 구석이 아닌 그 좌표도 역시 탈출할 수 있는 좌표가 된다.
         # (좌표를 따라 가면 탈출이 가능한 구석 좌표를 만날 것이고, 그러면 탈출이 가능하기 때문에)
         while Q:
-            Q_x, Q_y = Q.popleft() # 1 3
+            Q_x, Q_y = Q.popleft()
 
-            for k in range(4):  # k = 1
-                new_tx, new_ty = Q_x + dx[k], Q_y + dy[k] # x, y = 2 3
-                if 0 <= new_tx < n and 0 <= new_ty < m:   # 인접한 방향 중 구석이 아닌 경우
-                    target_number = move_set.index(area[new_tx][new_ty]) # num = 0
-                    target_x, target_y = new_tx + dx[target_number], new_ty + dy[target_number] #
+            for k in range(4):
+                new_tx, new_ty = Q_x + dx[k], Q_y + dy[k]     # 원래의 좌표와 인접한 네 방향의 좌표를 순차적으로 탐색한다.
+                if 0 <= new_tx < n and 0 <= new_ty < m:       # 인접한 방향의 좌표가 배열의 범위를 벗어나지 않은 경우
+                    target_number = move_set.index(area[new_tx][new_ty])
+                    target_x, target_y = new_tx + dx[target_number], new_ty + dy[target_number]   # 인접한 좌표의 명령에 따라 이동한 새로운 좌표
 
+                    # 만약 새롭게 이동한 좌표가 기존의 Q_x, Q_y와 동일하다면?
+                    # Q_x, Q_y로부터 인접한 좌표인 new_tx, new_ty 역시 탈출이 가능한 좌표라는 것을 의미한다.
+                    # 따라서 Q에 new_tx, new_ty를 추가해 추가적인 탈출 경로가 있는지 탐색해나간다.
                     if target_x == Q_x and target_y == Q_y:
-                        success.add((target_x, target_y))
+                        success.add((new_tx, new_ty))
                         cnt += 1
                         # visit[new_tx][new_ty] = 1
-                        Q.append([target_x, target_y])
-
-    # else:
-    #     Q = deque()
-    #     Q.append([tx, ty])
-    #     while Q:
-    #         tx, ty = Q.popleft()
-    #         visit[tx][ty] = 1
-    #         move_number = move_set.index(area[tx][ty])
-    #         new_tx, new_ty = tx + dx[move_number], ty + dy[move_number]
-    #
-    #         if not (0 <= new_tx < n) or not (0 <= new_ty < m) and not visit[new_tx][new_ty]:
-    #             success.add((x, y))
-    #             cnt += 1
-    #             return
-
-            # if 0 <= new_tx < n and 0 <= new_ty < m and not visit[new_tx][new_ty]:
-
-
-
-        # elif 0 < tx < n - 1 and 0 < ty < m - 1 and [tx, ty] not in check: # and not visit[tx][ty]:
-        #     check.append([tx, ty])
+                        Q.append([new_tx, new_ty])
 
 
 n, m = map(int, sys.stdin.readline().split())
 area = [sys.stdin.readline() for _ in range(n)]
-visit = [[0] * m for _ in range(n)]
-corner = []
-check = deque()
-success = set()
-failed = set()
+# visit = [[0] * m for _ in range(n)]
+corner = []                             # 구석 좌표를 담기 위한 리스트
+success = set()                         # 탈출에 성공하거나, 탈출이 가능한 경로인 경우 해당 좌표를 담기 위한 집합
 cnt = 0
-move_set = ['U', 'D', 'L', 'R']
+move_set = ['U', 'D', 'L', 'R']         # 상하좌우의 순서이고, 추후 인접한 방향을 찾아나갈 때 해당 좌표에서의 방향값을 인덱스로 활용하기 위해 사용
 
 # 구석 좌표만 따로 모아주는 과정
 for i in range(n):
     for j in range(m):
         if i == 0 or i == n - 1:
-            corner.append([i, j]) #, [area[i][j]]])
+            corner.append([i, j])
         elif j == 0 and area[i][j] not in corner or j == m - 1 and area[i][j] not in corner:
             corner.append([i, j])
 
@@ -412,21 +398,6 @@ for i in range(n):
 # 구석 좌표들을 대상으로 검사
 for i, j in corner:
     find(i, j)
-#
-# if check:
-#     while check:
-#         new_x, new_y = check.popleft()
-#         visit[new_x][new_y] = 1
-#
-#         for i in range(4):
-#             new_tx, new_ty = new_x + dx[i], new_y + dy[i]
-#
-#             if (new_tx, new_ty) in success and (new_x, new_y) not in success:
-#                 success.add((new_x, new_y))
-#                 cnt += 1
-#
-#             if 0 < new_tx < n - 1 and 0 < new_ty < m - 1 and not visit[new_tx][new_ty]:
-#                 check.append([new_tx, new_ty])
 
-
+# 탈출할 수 있는 칸의 개수를 출력
 print(cnt)
