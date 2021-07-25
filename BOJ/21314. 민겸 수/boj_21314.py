@@ -7,6 +7,7 @@
 
 # 어떻게 끊어내는 것이 최대가 될까?
 # MK, MMK 과 같이 크게 묶어내는 것이 타당해보인다. MKK같이 K가 연달아 온다면 (MK)K와 같이 최대한 끊어낸다.
+# 5....0의 형태로 만들고, M이 남으면 전부 1로 바꾼다.
 
 # 반대로 최소로 만드려면?
 # 하나씩 끊어내는 방법이 있을것같다. MKK의 경우, (MK)K로 끊어내면 50/5가 되지만 M/K/K로 나눈다면 1/5/5가 된다.
@@ -29,7 +30,7 @@ def max_value(arr):
 
     if temp:
         m_count = temp.count('M')
-        ans += str(10 ** (m_count - 1))
+        ans += ('1' * m_count)
     return ans
 
 def min_value(arr):
