@@ -8,6 +8,7 @@
 '''
 
 from collections import deque
+from copy import deepcopy
 
 dx = [-1, 1, 0, 0]
 dy = [0, 0, -1, 1]
@@ -17,28 +18,25 @@ def BFS(x, y):
 
     Q = deque()
     Q.append([x, y])
+    connected = []
     visited[x][y] = 1
-    temp = arr[x][y]
-    connected = [[x, y]]
 
     while Q:
-        print(Q)
-        print(visited)
-        print(connected)
         x, y = Q.popleft()
         for i in range(4):
             tx, ty = x + dx[i], y + dy[i]
-            if 0 <= tx < N and 0 <= ty < N and L <= abs(arr[x][y] - arr[tx][ty]) <= R and not visited[tx][ty] and [tx, ty] not in connected:
+            if 0 <= tx < N and 0 <= ty < N and L <= abs(arr[x][y] - arr[tx][ty]) <= R and [tx, ty] not in connected and not visited[tx][ty]:
+                if [x, y] not in connected:
+                    connected.append([x, y])
+                    check += arr[x][y]
+
                 Q.append([tx, ty])
                 visited[tx][ty] = 1
-                temp += arr[tx][ty]
+                check += arr[tx][ty]
                 connected.append([tx, ty])
 
-    for x, y in connected:
-        arr[x][y] = int(temp / len(connected))
+    return connected
 
-    ans += 1
-    check = True
 
 N, L, R = map(int, input().split())
 arr = [list(map(int, input().split())) for _ in range(N)]
@@ -46,13 +44,20 @@ ans = 0
 
 while True:
     visited = [[0] * N for _ in range(N)]
-    check = False
-    # for _ in arr:
-    #     print(*_)
-    #
+    copied = deepcopy(arr)
+
     for i in range(N):
         for j in range(N):
+            check = 0
             if not visited[i][j]:
-                BFS(i, j)
+                result = BFS(i, j)
+                if result:
+                    for x, y in result:
+                        arr[x][y] = int(check / len(result))
+
+    if copied == arr:
+        break
+    else:
+        ans += 1
 
 print(ans)
