@@ -13,44 +13,47 @@ deque에 x 좌표와 y 좌표 값을 넣되, 부술 수 있는 벽의 잔여 횟
 그렇다고 방문한 좌표에 방문 처리를 하지 않으면 무한 루프에 빠질 우려가 있기에 방문하는 좌표는 방문 처리를 하고, (n, m) 위치에서만 최솟값 비교를 해보자!
 '''
 
-
+import sys
 from collections import deque
 
-dx = [-1, 1, 0, 0]            # 상하좌우
+dx = [-1, 1, 0, 0]
 dy = [0, 0, -1, 1]
 
-def BFS(x, y, k, dist):
+input = sys.stdin.readline
+
+def BFS(x, y, distance, breakable_count):
+    global answer
     Q = deque()
-    Q.append([x, y, k, dist])
-    visited[x][y][k] = 0
-    value = 0xffff
+    Q.append([x, y, distance, breakable_count])
 
     while Q:
-        x, y, k, dist = Q.popleft()
+        x, y, distance, breakable_count = Q.popleft()
+        if breakable_count > K: continue
+
+        visited[breakable_count][x][y] = True
+
         if x == N - 1 and y == M - 1:
-            value = min(value, dist)
-            continue
+            answer = min(answer, distance)
+            return
+        for _ in range(4):
+            tx, ty = x + dx[_], y + dy[_]
+            if 0 <= tx < N and 0 <= ty < M and not visited[breakable_count][tx][ty]:
+                if maze[tx][ty] == "1":
+                    if breakable_count < K:
+                        visited[breakable_count][tx][ty] = True
+                        Q.append([tx, ty, distance + 1, breakable_count + 1])
+                else:
+                    visited[breakable_count][tx][ty] = True
+                    Q.append([tx, ty, distance + 1, breakable_count])
 
-        for i in range(4):
-            tx, ty = x + dx[i], y + dy[i]
-            if 0 <= tx < N and 0 <= ty < M and not visited[tx][ty][k]:
-
-                if arr[tx][ty] == '0':
-                    visited[tx][ty][k] = dist + 1
-                    Q.append([tx, ty, k, dist + 1])
-                elif k < K:
-                    visited[tx][ty][k + 1] = dist + 1
-                    Q.append([tx, ty, k + 1, dist + 1])
-
-    if value == 0xffff:
-        return -1
-    else:
-        return value + 1
-
-    return -1
 
 N, M, K = map(int, input().split())
-arr = [list(input()) for _ in range(N)]
-visited = [[[0] * M for _ in range(N)] for _ in range(K + 1)]
+maze = [list(input()) for _ in range(N)]
+visited = [[[False for i in range(M)] for _ in range(N)] for _ in range(K + 1)]
+answer = 0xffffff
 
-print(BFS(0, 0, 0, 0))
+for _ in range(K + 1):
+    visited[_][0][0] = True
+
+BFS(0, 0, 1, 0)
+print(answer) if answer != 0xffffff else print(-1)
