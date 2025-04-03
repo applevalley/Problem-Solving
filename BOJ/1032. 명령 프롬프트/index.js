@@ -2,7 +2,6 @@
 
 const fs = require("fs");
 const path = require("path");
-
 const filePath = path.join(__dirname, "example.txt");
 
 let input = fs
